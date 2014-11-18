@@ -23,7 +23,8 @@ def template_for(name):
     files = glob.glob(_template_path_for('*'))
     expected_path = _template_path_for(name)
     if expected_path in files:
-        return open(expected_path, 'r').read()
+        with open(expected_path, 'r') as template_file:
+            return template_file.read()
     else:
         raise LookupError("Could not find the specified template")
 
