@@ -1,7 +1,7 @@
 import json
 import logging
 import requests
-import globbing
+import glob
 
 from flask import Flask, request
 from os import environ
