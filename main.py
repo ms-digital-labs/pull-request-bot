@@ -1,39 +1,44 @@
+import glob
 import json
 import logging
-import requests
-import glob
+from os import environ
 
 from flask import Flask, request
-from os import environ
+import requests
 
 logging.getLogger().addHandler(logging.StreamHandler())
 
 app = Flask(__name__)
 
 OAUTH_TOKEN = environ["OAUTH_TOKEN"]
-AUTH_HEADER = "token {0}".format(OAUTH_TOKEN)
+AUTH_HEADER = "token {}".format(OAUTH_TOKEN)
 
-def template_path_for(name):
-    return "templates/{0}.md".format(name)
+def _template_path_for(name):
+    return "templates/{}.md".format(name)
 
 def template_for(name):
-    files = glob.glob(template_path_for('*'))
-    expected_path = template_path_for(name)
+    """
+    Gets the contents of the named template file.
+    """
+    files = glob.glob(_template_path_for('*'))
+    expected_path = _template_path_for(name)
     if expected_path in files:
         return open(expected_path, 'r').read()
     else:
         raise LookupError("Could not find the specified template")
 
-def post_comments_to(url, template):
+def post_comments_to(url, body):
+    """
+    Given a comments URL and a comment body, create a new comment.
+    """
     headers = {
         'Authorization': AUTH_HEADER,
         'content-type': 'application/json',
     }
     data = {
-        'body': template,
+        'body': body,
     }
     return requests.post(url, headers=headers, data=json.dumps(data))
-
 
 @app.route("/pull_request", methods=['POST'])
 def pull_request():
