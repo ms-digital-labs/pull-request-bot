@@ -38,4 +38,4 @@ def pull_request():
         return "Thanks, but I don't care"
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=environ.get("PORT"))
