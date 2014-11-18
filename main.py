@@ -37,8 +37,10 @@ def post_comments_to(url, template):
 
 @app.route("/pull_request", methods=['POST'])
 def pull_request():
-    print  request.json
-    if request.json["action"] == "opened":
+    event_type = request.headers["X-GitHub-Event"]
+    action = request.json["action"]
+
+    if action == "opened" and event_type == "pull_request":
         comments_url = request.json["pull_request"]["comments_url"]
         template = template_for(request.args.get("comment_template", "default"))
         post_comments_to(comments_url, template)
