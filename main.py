@@ -42,11 +42,18 @@ def post_comments_to(url, body):
     data = {
         'body': body,
     }
-    return requests.post(url, headers=headers, data=json.dumps(data))
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    response.raise_for_status()
 
 
 @app.route("/pull_request", methods=['POST'])
 def pull_request():
+    """
+    Respond to github's webhook calls. We ignore anything other than new PRs.
+
+    The github API just cares about the HTTP status code, no response body is
+    needed.
+    """
     event_type = request.headers["X-GitHub-Event"]
     action = request.json["action"]
     template_name = request.args.get("comment_template", "default")
