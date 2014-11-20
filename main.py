@@ -46,6 +46,14 @@ def post_comments_to(url, body):
     response.raise_for_status()
 
 
+@app.route("/", methods=['GET'])
+def home():
+    """
+    A blank home page so I don't need to panic every time I visit it.
+    """
+    return "everything is ok"
+
+
 @app.route("/pull_request", methods=['POST'])
 def pull_request():
     """
