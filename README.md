@@ -1,4 +1,5 @@
 # PR Bot.
+[ ![Codeship Status for ms-digital-labs/gif-bot](https://codeship.com/projects/6187b380-52c6-0132-d85e-6600710ca99c/status)](https://codeship.com/projects/48721)
 
 Deploy it, with `OAUTH_TOKEN` set to a valid Github OAuth token, and add a
 webhook that triggers on pull request creation pointing to
