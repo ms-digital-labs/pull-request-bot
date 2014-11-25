@@ -63,11 +63,7 @@ def extract_template_from_repo(repository, ref="master"):
     return b64decode(response.json()["content"])
 
 
-def template_from_request_json(json):
-    """
-    Uses the request JSON to get the merge checklist from the git repo
-    :param json: A github pull request webhook notification JSON.
-    """
+def _template_from_request_json(json):
     pull_request = json["pull_request"]
     pr_head_ref = pull_request["head"]["ref"]
     repo_name = pull_request["head"]["repositiory"]["full_name"]
@@ -97,7 +93,7 @@ def pull_request():
     if action == "opened" and event_type == "pull_request":
         comments_url = request.json["pull_request"]["comments_url"]
         try:
-            template = template_from_request_json(request.json)
+            template = _template_from_request_json(request.json)
         except requests.exceptions.HTTPError:
             template = template_for(template_name)
         post_comments_to(comments_url, template)
