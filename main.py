@@ -1,3 +1,4 @@
+from base64 import b64decode
 import glob
 import json
 import logging
@@ -12,6 +13,12 @@ app = Flask(__name__)
 
 OAUTH_TOKEN = environ["OAUTH_TOKEN"]
 AUTH_HEADER = "token {}".format(OAUTH_TOKEN)
+GITHUB_REQUEST_HEADERS = {
+    'Authorization': AUTH_HEADER,
+    'content-type': 'application/json',
+}
+MERGE_CHECKLIST_API_PATH =\
+    "https://api.github.com/repos/{}/contents/.merge_checklist.md"
 
 
 def _template_path_for(name):
@@ -35,15 +42,32 @@ def post_comments_to(url, body):
     """
     Given a comments URL and a comment body, create a new comment.
     """
-    headers = {
-        'Authorization': AUTH_HEADER,
-        'content-type': 'application/json',
-    }
     data = {
         'body': body,
     }
+    headers = GITHUB_REQUEST_HEADERS
     response = requests.post(url, headers=headers, data=json.dumps(data))
     response.raise_for_status()
+
+
+def extract_template_from_repo(repository, ref="master"):
+    """
+    Loads the `.merge_checklist.md` file from the root of the given repo.
+    :param repository: Full repository path (username/repository).
+    :param ref: Git reference.
+    """
+    url = MERGE_CHECKLIST_API_PATH.format(repository)
+    headers = GITHUB_REQUEST_HEADERS
+    response = requests.get(url, headers=headers, params={"ref": ref})
+    response.raise_for_status()
+    return b64decode(response.json()["content"])
+
+
+def _template_from_request_json(json):
+    pull_request = json["pull_request"]
+    pr_head_ref = pull_request["head"]["ref"]
+    repo_name = pull_request["head"]["repositiory"]["full_name"]
+    return extract_template_from_repo(repo_name, pr_head_ref)
 
 
 @app.route("/", methods=['GET'])
@@ -68,7 +92,10 @@ def pull_request():
 
     if action == "opened" and event_type == "pull_request":
         comments_url = request.json["pull_request"]["comments_url"]
-        template = template_for(template_name)
+        try:
+            template = _template_from_request_json(request.json)
+        except requests.exceptions.HTTPError:
+            template = template_for(template_name)
         post_comments_to(comments_url, template)
         return "ok"
     else:
