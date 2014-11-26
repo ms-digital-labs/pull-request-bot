@@ -66,7 +66,7 @@ def extract_template_from_repo(repository, ref="master"):
 def _template_from_request_json(json):
     pull_request = json["pull_request"]
     pr_head_ref = pull_request["head"]["ref"]
-    repo_name = pull_request["head"]["repositiory"]["full_name"]
+    repo_name = pull_request["head"]["repo"]["full_name"]
     return extract_template_from_repo(repo_name, pr_head_ref)
 
 
